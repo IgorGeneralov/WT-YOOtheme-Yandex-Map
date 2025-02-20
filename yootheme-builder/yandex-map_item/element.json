@@ -3,10 +3,8 @@
     "name": "yandex-map_item",
     "title": "Yandex Map Item",
     "width": 500,
-    "placeholder": {
-        "props": {
-            "location": "53.5503, 10.0006"
-        }
+    "defaults": {
+        "location": "51.533562,46.034266"
     },
     "fields": {
         "location": {
@@ -81,6 +79,20 @@
             "type": "checkbox",
             "text": "Show popup on load"
         },
+        "popup_padding": {
+            "label": "Padding",
+            "description": "Set padding of popup container.",
+            "type": "select",
+            "options": {
+                "None": "",
+                "0": "p-0",
+                "1": "p-1",
+                "2": "p-2",
+                "3": "p-3",
+                "4": "p-4",
+                "5": "p-5"
+            }
+        },
         "image_focal_point": {
             "label": "Focal Point",
             "description": "Set a focal point to adjust the image focus when cropping.",
@@ -141,7 +153,7 @@
                             "label": "Popup",
                             "type": "group",
                             "divider": true,
-                            "fields": ["show_popup"]
+                            "fields": ["show_popup", "popup_padding"]
                         },
                         {
                             "label": "Image",

@@ -9,8 +9,8 @@
     "container": true,
     "width": 500,
     "defaults": {
-        "center_x": 0.0,
-        "center_y": 0.0,
+        "center_lat": 51.533562,
+        "center_lng": 46.034266,
         "show_title": true,
         "show_meta": true,
         "show_content": true,
@@ -18,12 +18,12 @@
         "show_link": true,
         "type": "scheme",
         "zoom": 10,
-        "controls": true,
-        "zooming": false,
-        "dragging": false,
+        "zooming": true,
+        "show_zoom_controls": true,
+        "dragging": true,
         "min_zoom": 0,
         "max_zoom": 21,
-        "text_color": "light",
+        "map_theme": "light",
         "title_hover_style": "reset",
         "title_element": "h3",
         "meta_style": "text-meta",
@@ -125,12 +125,12 @@
                 "Satellite": "satellite"
             }
         },
-        "center_x": {
-            "label": "Longitude",
+        "center_lat": {
+            "label": "Latitude",
             "type": "number"
         },
-        "center_y": {
-            "label": "Latitude",
+        "center_lng": {
+            "label": "Longitude",
             "type": "number"
         },
         "zoom": {
@@ -143,15 +143,14 @@
                 "step": 1
             }
         },
-        "controls": {
-            "label": "Controls",
-            "description": "Display the map controls and define whether the map can be zoomed or dragged using the mouse wheel or touch.",
-            "type": "checkbox",
-            "text": "Show map controls"
-        },
         "zooming": {
+            "label": "Controls",
             "type": "checkbox",
             "text": "Enable map zooming"
+        },
+        "show_zoom_controls": {
+            "type": "checkbox",
+            "text": "Show map zoom controls"
         },
         "dragging": {
             "type": "checkbox",
@@ -221,13 +220,13 @@
             "text": "Use as breakpoint only",
             "enable": "width && !viewport_height"
         },
-        "text_color": {
-            "label": "Text Color",
-            "description": "Set light or dark color mode for text, buttons and controls if a sticky transparent navbar is displayed above.",
+        "map_theme": {
+            "label": "Map theme color",
+            "description": "Set light or dark color mode for map",
             "type": "select",
             "options": {
-                "Light": "light",
-                "Dark": "dark"
+                "Light mode": "light",
+                "Dark mode": "dark"
             },
             "source": true
         },
@@ -236,10 +235,27 @@
             "type": "checkbox",
             "text": "Enable marker clustering"
         },
+        "popup_min_width": {
+            "label": "Min Width",
+            "description": "Set the minimum width of popup container."
+        },
         "popup_max_width": {
             "label": "Max Width",
-            "description": "Set the maximum width.",
-            "type": "number"
+            "description": "Set the maximum width of popup container."
+        },
+        "popup_padding": {
+            "label": "Padding",
+            "description": "Set padding of popup container.",
+            "type": "select",
+            "options": {
+                "None": "",
+                "0": "p-0",
+                "1": "p-1",
+                "2": "p-2",
+                "3": "p-3",
+                "4": "p-4",
+                "5": "p-5"
+            }
         },
         "title_style": {
             "label": "Style",
@@ -689,10 +705,10 @@
                                     "name": "_center_coords",
                                     "type": "grid",
                                     "width": "1-2",
-                                    "fields": ["center_y", "center_x"]
+                                    "fields": ["center_lat", "center_lng"]
                                 },
-                                "controls",
                                 "zooming",
+                                "show_zoom_controls",
                                 "dragging",
                                 "zoom",
                                 "min_zoom",
@@ -710,7 +726,7 @@
                                 "height",
                                 "width",
                                 "width_breakpoint",
-                                "text_color"
+                                "map_theme"
                             ]
                         },
                         {
@@ -723,7 +739,7 @@
                             "label": "Popup",
                             "type": "group",
                             "divider": true,
-                            "fields": ["popup_max_width"]
+                            "fields": ["popup_min_width", "popup_max_width", "popup_padding"]
                         },
                         {
                             "label": "Title",

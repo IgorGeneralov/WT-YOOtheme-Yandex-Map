@@ -17,3 +17,8 @@ button.ymaps3x0--default-marker__popup__close
 {
     margin: 4px 4px 4px auto;
 }
+
+ymaps.ymaps3x0--marker:has(> ymaps > ymaps.ymaps3x0--default-marker__popup:not(.ymaps3x0--default-marker__hider))
+{
+    z-index: 1 !important;
+}

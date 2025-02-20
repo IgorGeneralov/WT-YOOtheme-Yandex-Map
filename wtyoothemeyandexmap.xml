@@ -7,7 +7,7 @@
     <creationDate>July 2024</creationDate>
     <copyright>(C) 2024 Andrey Smirnikov</copyright>
     <license>GNU General Public License version 3 or later</license>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <description>PLG_WTYOOTHEMEYANDEXMAP_DESC</description>
     <scriptfile>script.php</scriptfile>
     <namespace path="src">Joomla\Plugin\System\WtYoothemeYandexMap</namespace>
@@ -31,6 +31,18 @@
                 <field name="yandex_map_api_key"
                        type="text"
                        label="PLG_WTYOOTHEMEYANDEXMAP_API_KEY_FIELD"
+                />
+                <field type="radio"
+                       name="yandex_map_api_type"
+                       label="PLG_WTYOOTHEMEYANDEXMAP_API_TYPE"
+                       default="free" class="btn-group btn-group-yesno">
+                    <option value="free">PLG_WTYOOTHEMEYANDEXMAP_API_TYPE_FREE</option>
+                    <option value="paid">PLG_WTYOOTHEMEYANDEXMAP_API_TYPE_PAID</option>
+                </field>
+                <field type="note"
+                       name="yandex_map_api_type_desc"
+                       description="PLG_WTYOOTHEMEYANDEXMAP_API_TYPE_DESC"
+                       class="col-12 alert alert-info"
                 />
             </fieldset>
         </fields>

@@ -1,21 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
     (function(w, a) {
         //"use strict";
-        async function C(elem, yandexmapProps)
+        async function build(elem, yandexmapProps)
         {
             await ymaps3.ready;
             const {YMapZoomControl} = await ymaps3.import('@yandex/ymaps3-controls@0.0.1');
             const {YMapDefaultMarker} = await ymaps3.import('@yandex/ymaps3-markers@0.0.1');
             const {YMapClusterer, clusterByGrid} = await ymaps3.import('@yandex/ymaps3-clusterer@0.0.1');
 
-            const isZoomEnable = yandexmapProps['zooming'];
+            // Отступ карты - 25% от меньшей величины размеров карты
+            const marginPx = Math.min(elem.clientWidth, elem.clientHeight) / 4;
+
             const cfg = {
                 location: {
-                    center: [yandexmapProps['center_x'], yandexmapProps['center_y']],
+                    center: [yandexmapProps['center_lng'], yandexmapProps['center_lat']],
                     zoom: yandexmapProps['zoom'],
                 },
                 showScaleInCopyrights: true,
-                behaviors: []
+                behaviors: [],
+                margin: [marginPx, marginPx, marginPx, marginPx]
             };
 
             if (yandexmapProps['dragging'])
@@ -23,13 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 cfg.behaviors.push('drag');
             }
 
-            if (isZoomEnable)
+            if (yandexmapProps['zooming'])
             {
                 cfg.behaviors.push('scrollZoom', 'pinchZoom');
-            }
-
-            if (isZoomEnable)
-            {
                 cfg.zoomRange = {
                     min: parseInt(yandexmapProps['min_zoom']),
                     max: parseInt(yandexmapProps['max_zoom'])
@@ -52,29 +51,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'scheme':
                 default:
                     map.addChild(new ymaps3.YMapDefaultSchemeLayer({
-                        theme: yandexmapProps['text_color']
+                        theme: yandexmapProps['map_theme']
                     }));
                     break;
             }
             map.addChild(new ymaps3.YMapDefaultFeaturesLayer());
-            if (isZoomEnable)
+
+            if (yandexmapProps['show_zoom_controls'])
             {
                 map.addChild(new ymaps3.YMapControls({position: 'right'})
                     .addChild(new YMapZoomControl())
                 );
             }
 
+            let lastMarkerWithOpenedPopup = null;
             const k = 'ymaps3x0--default-marker__';
             class CustomMarker extends YMapDefaultMarker
             {
-                get coordinates() {
-                    return this._marker.coordinates
-                }
-
-                constructor(props) {
-                    super(props);
-                }
-
                 _createPopup() {
                     const {position: e, content: t, hidesMarker: o} = this._popupProps;
                     if (this._popup ? this._popup.innerHTML = "" : this._popup = document.createElement("ymaps"),
@@ -83,11 +76,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         this._popup.classList.add(`${k}popup`);
                         const e = document.createElement("ymaps");
                         e.className = `${k}popup-container`;
+                        // set popup padding
+                        if (this._props.markerProps['popup_padding'] || this._props.props['popup_padding'])
+                        {
+                            e.className += ' ' + (this._props.markerProps['popup_padding'] || this._props.props['popup_padding']);
+                        }
                         e.innerHTML = t;
-                        // set popup max width
+                        // set popup minimum width
+                        if (this._props.props['popup_min_width'])
+                        {
+                            e.style.minWidth = this._props.props['popup_min_width'];
+                        }
+                        // set popup maximum width
                         if (this._props.props['popup_max_width'])
                         {
-                            e.style.maxWidth = this._props.props['popup_max_width'] + 'px';
+                            e.style.maxWidth = this._props.props['popup_max_width'];
                         }
                         //
                         this._popup.appendChild(e);
@@ -99,6 +102,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else
                         this._popup.appendChild(t((()=>this._togglePopup(!1))));
                     return this._popup
+                }
+
+                _togglePopup(e)
+                {
+                    // Если всплывающее окно уже открыто - ничего не делаем
+                    if (e && this._popupIsOpen)
+                    {
+                        return;
+                    }
+
+                    // Закрываем все остальные всплывающие окна
+                    if (e && lastMarkerWithOpenedPopup && lastMarkerWithOpenedPopup !== this)
+                    {
+                        lastMarkerWithOpenedPopup._togglePopup(0);
+                    }
+
+                    super._togglePopup(e);
+
+                    if (e)
+                    {
+                        lastMarkerWithOpenedPopup = this;
+                    }
                 }
 
                 _createMarker() {
@@ -141,9 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (this._props.markerProps['marker_icon'] || this._props.props['marker_icon'])
                     {
                         o.appendChild(this._image(
-                            this._props.markerProps['marker_icon'] ? this._props.markerProps['marker_icon'] : this._props.props['marker_icon'],
-                            this._props.markerProps['marker_icon_width'] ? this._props.markerProps['marker_icon_width'] : this._props.props['marker_icon_width'],
-                            this._props.markerProps['marker_icon_height'] ? this._props.markerProps['marker_icon_height'] : this._props.props['marker_icon_height']
+                            this._props.markerProps['marker_icon'] || this._props.props['marker_icon'],
+                            this._props.markerProps['marker_icon_width'] || this._props.props['marker_icon_width'],
+                            this._props.markerProps['marker_icon_height'] || this._props.props['marker_icon_height']
                         ));
                     }
                     else
@@ -174,12 +199,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     contentHTML += popupImage(yandexmapProps, markerData);
                     contentHTML += popupElem('title', yandexmapProps, markerData['title']);
                     contentHTML += popupElem('meta', yandexmapProps, markerData['meta']);
-                    contentHTML += popupElem('content', yandexmapProps, markerData['content'], true);
+                    contentHTML += popupElem('content', yandexmapProps, markerData['content'], false);
                     contentHTML += popupLink(yandexmapProps, markerData);
 
                     const [lat, lng] = markerData['location'].split(',');
+                    if (isNaN(lat) || isNaN(lng))
+                    {
+                        continue;
+                    }
+
                     const markerCfg = {
-                        coordinates: [parseFloat(lng), parseFloat(lat)],
+                        coordinates: [parseFloat(lng).toFixed(6), parseFloat(lat).toFixed(6)],
                         popup: {content: contentHTML, position: 'left'},
                         props: yandexmapProps,
                         markerProps: markerData
@@ -189,35 +219,63 @@ document.addEventListener('DOMContentLoaded', () => {
                         markerCfg.title = markerData['title'];
                     }
 
-                    if (isClustering)
-                    {
-                        markerCoordinates.push({coordinates: [lng, lat], element: new CustomMarker(markerCfg)});
-                    }
-                    else
-                    {
-                        map.addChild(new CustomMarker(markerCfg));
-                    }
+                    markerCoordinates.push(new CustomMarker(markerCfg));
                 }
+                // перемещаем карту к последнему добавленному маркеру
+                if (markerCoordinates.length > 0)
+                {
+                    const [lastMarkerLng, lastMarkerLat] = markerCoordinates[markerCoordinates.length - 1].coordinates;
+                    map.update({location:{center: [lastMarkerLng, lastMarkerLat], duration: 400}});
+                }
+                //
 
                 if (isClustering)
                 {
                     const featureList = markerCoordinates.map((value, i) => ({
                         type: 'Feature',
                         id: i,
-                        geometry: {coordinates: value.coordinates, element: value.element}
+                        geometry: {
+                            coordinates: value.coordinates,
+                            element: value
+                        }
                     }));
 
-                    const markerRender = (feature) => feature.geometry.element;
-                    const clusterRender = (coordinates, features) => new ymaps3.YMapMarker({coordinates}, circle(features.length).cloneNode(true));
+                    const markerRendering = (feature) => feature.geometry.element;
+                    const clusterRendering = (coordinates, features) => {
+                        return new ymaps3.YMapMarker({
+                            coordinates: coordinates,
+                            onClick() {
+                                const bounds = getBounds(features.map(feature => feature.geometry.coordinates));
+                                map.update({location: {bounds: bounds, easing: 'ease-in-out', duration: 250}});
+                            }
+                        }, cluster(features.length).cloneNode(true));
+                    }
 
                     const clusterer = new YMapClusterer({
-                        method: clusterByGrid({gridSize: 64}),
+                        method: clusterByGrid({ gridSize: 64 }),
                         features: featureList,
-                        marker: markerRender,
-                        cluster: clusterRender
+                        marker: markerRendering,
+                        cluster: clusterRendering
                     });
                     map.addChild(clusterer);
                 }
+                else
+                {
+                    markerCoordinates.forEach(value => {
+                        map.addChild(value);
+                    });
+                }
+
+                // Закрываем всплывающее окно при клике вне его области
+                map.addChild(new ymaps3.YMapListener({
+                    layer: 'any',
+                    onClick: (object, event) => {
+                        if (lastMarkerWithOpenedPopup && !object)
+                        {
+                            lastMarkerWithOpenedPopup._togglePopup(0);
+                        }
+                    }
+                }));
             }
         }
 
@@ -227,19 +285,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     !this.script)
                     return;
                 const yandexmapProps = JSON.parse(this.script.textContent);
-                C(this.$el, yandexmapProps);
+                build(this.$el, yandexmapProps);
             }
         })
     })(UIkit, UIkit.util);
 });
 
-function circle(count)
+function cluster(count)
 {
-    const circle = document.createElement('div');
-    circle.classList.add('circle');
-    circle.style = "width: 48px; height: 48px; background-color: rgb(255, 51, 51); border-radius: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center;";
-    circle.innerHTML = `<span style="color: white; font-size: 1.5rem" class="circle-text">${count}</span>`;
-    return circle;
+    const clusterEl = document.createElement('div');
+    clusterEl.classList.add('circle');
+    clusterEl.style = "cursor: pointer; width: 48px; height: 48px; background-color: rgb(255, 51, 51); border-radius: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center;";
+    clusterEl.innerHTML = `<span style="color: white; font-size: 1.5rem" class="circle-text">${count}</span>`;
+    return clusterEl;
+}
+
+function getBounds(coordinates)
+{
+    let minLat = Infinity, minLng = Infinity;
+    let maxLat = -Infinity, maxLng = -Infinity;
+
+    for (const coords of coordinates)
+    {
+        const lat = coords[1];
+        const lng = coords[0];
+
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+    }
+
+    return [
+        [minLng, minLat],
+        [maxLng, maxLat]
+    ];
 }
 
 function popupLink(props, marker)
@@ -259,9 +339,9 @@ function popupLink(props, marker)
     }
     if (marker['link_aria_label'] || props['link_aria_label'])
     {
-        aLink.ariaLabel = marker['link_aria_label'] ? marker['link_aria_label'] : props['link_aria_label'];
+        aLink.ariaLabel = marker['link_aria_label'] || props['link_aria_label'];
     }
-    aLink.textContent = marker['link_text'] ? marker['link_text'] : props['link_text'];
+    aLink.textContent = marker['link_text'] || props['link_text'];
     if (props['link_style'])
     {
         if (props['link_style'] === 'link-muted' || props['link_style'] === 'link-text')
@@ -314,26 +394,26 @@ function popupImage(props, marker)
     return img.outerHTML;
 }
 
-function popupElem(type, props, value, isHtml = false)
+function popupElem(type, props, value, isTextContent = true)
 {
     if (!props['show_' + type] || !value)
     {
         return '';
     }
 
-    const elem = document.createElement(props[type + '_element'] ?? 'div');
+    const elem = document.createElement(props[type + '_element'] || 'div');
     setTopMargin(elem, props[type + '_margin']);
     addOptionalClass(elem, 'uk-text-', props[type + '_color']);
     addOptionalClass(elem, 'uk-', props[type + '_style']);
     addOptionalClass(elem, 'uk-heading-', props[type + '_decoration']);
     addOptionalClass(elem, 'uk-font-', props[type + '_font_family']);
-    if (isHtml)
+    if (isTextContent)
     {
-        elem.innerHTML = value;
+        elem.textContent = value;
     }
     else
     {
-        elem.textContent = value;
+        elem.innerHTML = value;
     }
 
     return elem.outerHTML;

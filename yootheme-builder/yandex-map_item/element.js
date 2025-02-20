@@ -2,19 +2,17 @@ document.addEventListener('DOMContentLoaded', () =>
 {
     (function(w, a) {
         "use strict";
-        async function C(elem, inputEl)
+        async function build(elem, inputEl)
         {
             await ymaps3.ready;
             const {YMapZoomControl} = await ymaps3.import('@yandex/ymaps3-controls@0.0.1');
             const {YMapDefaultMarker} = await ymaps3.import('@yandex/ymaps3-markers@0.0.1');
 
-            const yx = inputEl.value.split(',');
-            const x = yx[1] ? yx[1] : 52;
-            const y = yx[0] ? yx[0] : 52;
+            const [lat, lng] = inputEl.value.split(',');
 
             const map = new ymaps3.YMap(elem, {
                 location: {
-                    center: [x, y],
+                    center: [parseFloat(lng), parseFloat(lat)],
                     zoom: 9
                 },
                 showScaleInCopyrights: true
@@ -26,12 +24,15 @@ document.addEventListener('DOMContentLoaded', () =>
             );
 
             const draggableMarker = new YMapDefaultMarker({
-                coordinates: [x, y],
+                coordinates: [parseFloat(lng), parseFloat(lat)],
                 draggable: true,
                 onDragEnd: (crds) =>
                 {
-                    map.update({location:{center:[crds[0].toFixed(6), crds[1].toFixed(6)],duration:400}});
-                    inputEl.value = crds[1].toFixed(6) + ',' + crds[0].toFixed(6);
+                    const lat = crds[1].toFixed(6);
+                    const lng = crds[0].toFixed(6);
+
+                    map.update({location:{center:[lng, lat], duration:400}});
+                    inputEl.value = lat + ',' + lng;
                     inputEl.dispatchEvent(new Event('input'));
                 }
             });
@@ -39,21 +40,27 @@ document.addEventListener('DOMContentLoaded', () =>
             map.addChild(new ymaps3.YMapListener({
                 onClick: (obj, ev) =>
                 {
-                    draggableMarker.update({coordinates:[ev.coordinates[0].toFixed(6), ev.coordinates[1].toFixed(6)]});
-                    map.update({location:{center:[ev.coordinates[0].toFixed(6), ev.coordinates[1].toFixed(6)],duration:400}});
-                    inputEl.value = ev.coordinates[1].toFixed(6) + ',' + ev.coordinates[0].toFixed(6);
+                    const lat = ev.coordinates[1].toFixed(6);
+                    const lng = ev.coordinates[0].toFixed(6);
+
+                    draggableMarker.update({coordinates:[lng, lat]});
+                    map.update({location:{center:[lng, lat], duration:400}});
+                    inputEl.value = lat + ',' + lng;
                     inputEl.dispatchEvent(new Event('input'));
                 },
             }));
             inputEl.onchange = (ev) =>
             {
-                const [new_y, new_x] = ev.target.value.split(',');
-                if (isNaN(new_x) || isNaN(new_y))
+                let [new_lat, new_lng] = ev.target.value.split(',');
+                if (isNaN(new_lat) || isNaN(new_lng))
                 {
                     return;
                 }
-                draggableMarker.update({coordinates:[parseFloat(new_x).toFixed(6), parseFloat(new_y).toFixed(6)]});
-                map.update({location:{center:[parseFloat(new_x).toFixed(6), parseFloat(new_y).toFixed(6)],duration:400}});
+                new_lat = parseFloat(new_lat).toFixed(6);
+                new_lng = parseFloat(new_lng).toFixed(6);
+
+                draggableMarker.update({coordinates:[new_lng, new_lat]});
+                map.update({location:{center:[new_lng, new_lat], duration:400}});
             };
         }
 
@@ -63,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () =>
                 const mapContainer = document.createElement('div');
                 mapContainer.style = "height: 260px";
                 this.$el.insertAdjacentElement('beforebegin', mapContainer);
-                C(mapContainer, this.$el);
+                build(mapContainer, this.$el);
             }
         })
     })(UIkit, UIkit.util);
