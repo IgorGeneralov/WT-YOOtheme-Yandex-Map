@@ -11,15 +11,29 @@
 use YOOtheme\Config;
 use YOOtheme\Path;
 use YOOtheme\Translator;
+use YOOtheme\Metadata;
+use YOOtheme\YandexMapApiHelper;
+use function YOOtheme\app;
 
 class CustomizerListener
 {
     public static function init(Config $config, Translator $translator): void
     {
-        /* @var $wa \Joomla\CMS\WebAsset\WebAssetManager */
-        $wa = \Joomla\CMS\Factory::getApplication()->getDocument()->getWebAssetManager();
-        $wa->registerAndUseScript('plg.system.wtyoothemeyandexmap_map_item', 'plugins/system/wtyoothemeyandexmap/yootheme-builder/yandex-map_item/element.js');
-        
+        // Загружаем языковой файл
         $translator->addResource(Path::get("../yandex-map/languages/{$config('locale.code')}.json"));
+
+        // Собственный скрипт элемента
+        $metadata = app(Metadata::class);
+        $metadata->set('script:plg.system.wtyoothemeyandexmap_map_item', ['src' => 'plugins/system/wtyoothemeyandexmap/yootheme-builder/yandex-map_item/element.js']);
+
+        $yandexmap_api = YandexMapApiHelper::getYandexMapApi();
+
+        if (!$yandexmap_api)
+        {
+            return;
+        }
+
+        // API Яндекс карт
+        $metadata->set('script:plg.system.wtyoothemeyandexmap_api', ['src' => $yandexmap_api]);
     }
 }

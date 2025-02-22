@@ -1,10 +1,21 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
-    (function(w, a) {
+    (function(w, a)
+    {
         "use strict";
         async function build(elem, inputEl)
         {
-            await ymaps3.ready;
+            try
+            {
+                await ymaps3.ready;
+            }
+            catch (e)
+            {
+                console.log(e);
+                console.log('wtyoothemeyandexmap: Ошибка при загрузке API Яндекс Карт. Пожалуйста, укажите верный ключ API в настройках плагина!');
+                return;
+            }
+
             const {YMapZoomControl} = await ymaps3.import('@yandex/ymaps3-controls@0.0.1');
             const {YMapDefaultMarker} = await ymaps3.import('@yandex/ymaps3-markers@0.0.1');
 
@@ -66,12 +77,13 @@ document.addEventListener('DOMContentLoaded', () =>
 
         w.component("Yandexmaplocation",
         {
-            connected() {
+            connected()
+            {
                 const mapContainer = document.createElement('div');
                 mapContainer.style = "height: 260px";
                 this.$el.insertAdjacentElement('beforebegin', mapContainer);
                 build(mapContainer, this.$el);
             }
-        })
+        });
     })(UIkit, UIkit.util);
 });

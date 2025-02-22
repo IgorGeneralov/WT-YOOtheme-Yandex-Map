@@ -3,7 +3,17 @@ document.addEventListener('DOMContentLoaded', () => {
         //"use strict";
         async function build(elem, yandexmapProps)
         {
-            await ymaps3.ready;
+            try
+            {
+                await ymaps3.ready;
+            }
+            catch (e)
+            {
+                console.log(e);
+                console.log('wtyoothemeyandexmap: Ошибка при загрузке API Яндекс Карт. Пожалуйста, укажите верный ключ API в настройках плагина!');
+                return;
+            }
+
             const {YMapZoomControl} = await ymaps3.import('@yandex/ymaps3-controls@0.0.1');
             const {YMapDefaultMarker} = await ymaps3.import('@yandex/ymaps3-markers@0.0.1');
             const {YMapClusterer, clusterByGrid} = await ymaps3.import('@yandex/ymaps3-clusterer@0.0.1');

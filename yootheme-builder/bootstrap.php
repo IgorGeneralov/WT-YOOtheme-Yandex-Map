@@ -9,6 +9,7 @@
  */
 
 include_once __DIR__ . '/src/CustomizerListener.php';
+include_once __DIR__ . '/src/YandexMapApiHelper.php';
 
 use YOOtheme\Builder;
 use YOOtheme\Path;

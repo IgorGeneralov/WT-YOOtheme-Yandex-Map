@@ -10,8 +10,7 @@
 
 namespace YOOtheme;
 
-use Joomla\CMS\Factory;
-use Joomla\CMS\Plugin\PluginHelper;
+use YOOtheme\YandexMapApiHelper;
 
 return [
     'transforms' => [
@@ -21,18 +20,17 @@ return [
                 return false;
             }
 
-            $plugin = PluginHelper::getPlugin('system', 'wtyoothemeyandexmap');
-            $params = json_decode($plugin->params);
-            $yandex_map_api_entry_point_free = 'https://api-maps.yandex.ru/3.0';
-            $yandex_map_api_entry_point_paid = 'https://enterprise.api-maps.yandex.ru/3.0';
-            $entrypoint = $params->yandex_map_api_type === 'free' ? $yandex_map_api_entry_point_free : $yandex_map_api_entry_point_paid;
-            $api_key = json_decode($plugin->params)->yandex_map_api_key;
-            $lang = str_replace('-', '_', Factory::getApplication()->getLanguage()->getTag());
+            $yandexmap_api = YandexMapApiHelper::getYandexMapApi();
+
+            if (!$yandexmap_api)
+            {
+                return false;
+            }
 
             $node->props['metadata'] = [];
             // Подключаем API 3.0 Яндекс карт
             $node->props['metadata']['script:plg.system.wtyoothemeyandexmap_api'] = [
-                'src' => "{$entrypoint}/?apikey={$api_key}&lang={$lang}"
+                'src' => $yandexmap_api
             ];
             // Собственный скрипт элемента
             $node->props['metadata']['script:plg.system.wtyoothemeyandexmap_element'] = [
