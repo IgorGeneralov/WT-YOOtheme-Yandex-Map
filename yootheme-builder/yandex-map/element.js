@@ -105,8 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         //
                         this._popup.appendChild(e);
                         const o = document.createElement("button");
-                        o.className = `${k}popup__close`;
-                        o.textContent = "✖";
+                        o.className = "uk-modal-close-default";
+                        o.textContent = "";
+                        o.setAttribute("uk-close", "");
                         o.onclick = ()=>this._togglePopup(!1);
                         this._popup.appendChild(o);
                     } else
