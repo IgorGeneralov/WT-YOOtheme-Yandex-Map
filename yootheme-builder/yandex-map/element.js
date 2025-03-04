@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // set popup padding
                         if (this._props.markerProps['popup_padding'] || this._props.props['popup_padding'])
                         {
-                            e.className += ' ' + (this._props.markerProps['popup_padding'] || this._props.props['popup_padding']);
+                            e.className = 'uk-padding-' + (this._props.markerProps['popup_padding'] || this._props.props['popup_padding']);
                         }
                         e.innerHTML = t;
                         // set popup minimum width
