@@ -85,12 +85,9 @@
             "type": "select",
             "options": {
                 "None": "",
-                "0": "p-0",
-                "1": "p-1",
-                "2": "p-2",
-                "3": "p-3",
-                "4": "p-4",
-                "5": "p-5"
+                "Small": "small",
+                "Default": "default",
+                "Large": "large"
             }
         },
         "image_focal_point": {
