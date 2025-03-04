@@ -87,10 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         const e = document.createElement("ymaps");
                         e.className = `${k}popup-container`;
                         // set popup padding
-                        if (this._props.markerProps['popup_padding'] || this._props.props['popup_padding'])
-                        {
-                            e.className += ' ' + (this._props.markerProps['popup_padding'] || this._props.props['popup_padding']);
-                        }
+                        e.className = [
+    this._props.markerProps['popup_padding'] || this._props.props['popup_padding'] ? 'uk-padding-' + (this._props.markerProps['popup_padding'] || this._props.props['popup_padding']) : '',
+    this._props.props['item_text_align'] ? 'uk-text-' + this._props.props['item_text_align'] : ''
+].filter(Boolean).join(' ');
                         e.innerHTML = t;
                         // set popup minimum width
                         if (this._props.props['popup_min_width'])
